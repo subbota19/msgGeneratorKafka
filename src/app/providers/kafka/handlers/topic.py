@@ -12,6 +12,13 @@ async def handle_create_topic(request):
     replication_factor = data.get("replication_factor", 1)
     timeout_ms = data.get("timeout_ms", 10000)
 
+    log_data = {
+        "topic_name": topic_name,
+        "bootstrap_servers": bootstrap_servers,
+        "num_partitions": num_partitions,
+        "replication_factor": replication_factor,
+        "timeout_ms": timeout_ms
+    }
     try:
         topic = (
             TopicBuilder()
@@ -24,23 +31,8 @@ async def handle_create_topic(request):
         )
     except Exception as exc:
 
-        error_data = {
-            "msg": str(exc),
-            "topic_name": topic_name,
-            "bootstrap_servers": bootstrap_servers,
-            "num_partitions": num_partitions,
-            "replication_factor": replication_factor,
-            "timeout_ms": timeout_ms,
-        }
+        log_data.update({"msg": str(exc)})
+        return failed_response(data=log_data)
 
-        return failed_response(data=error_data)
-
-    success_data = {
-        "msg": "Topic is created",
-        "topic_name": topic_name,
-        "bootstrap_servers": bootstrap_servers,
-        "num_partitions": num_partitions,
-        "replication_factor": replication_factor,
-        "timeout_ms": timeout_ms,
-    }
-    return success_response(data=success_data)
+    log_data.update({"msg": "Topic is created"})
+    return success_response(data=log_data)

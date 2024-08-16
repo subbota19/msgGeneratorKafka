@@ -1,4 +1,4 @@
-from app.providers.kafka.managers.kafka_client_manager import KafkaClientManager
+from app.providers.kafka.managers.client_manager import KafkaClientManager
 
 
 class TopicBuilder:
