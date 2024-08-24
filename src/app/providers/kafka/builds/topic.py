@@ -1,15 +1,27 @@
-from app.providers.kafka.managers.client_manager import KafkaClientManager
+from app.providers.kafka.managers.client_manager import (
+    KafkaClientManager,
+)
 
 
 class TopicBuilder:
-    __slots__ = ["topic_name", "bootstrap_servers", "num_partitions", "replication_factor", "timeout_ms"]
+    __slots__ = [
+        "topic_name",
+        "bootstrap_servers",
+        "num_partitions",
+        "replication_factor",
+        "timeout_ms",
+    ]
 
     def set_topic_name(self, topic_name):
         setattr(self, "topic_name", topic_name)
         return self
 
     def set_bootstrap_servers(self, bootstrap_servers):
-        setattr(self, "bootstrap_servers", bootstrap_servers)
+        setattr(
+            self,
+            "bootstrap_servers",
+            bootstrap_servers,
+        )
         return self
 
     def set_num_partitions(self, num_partitions=1):
@@ -17,7 +29,11 @@ class TopicBuilder:
         return self
 
     def set_replication_factor(self, replication_factor=1):
-        setattr(self, "replication_factor", replication_factor)
+        setattr(
+            self,
+            "replication_factor",
+            replication_factor,
+        )
         return self
 
     def set_timeout_ms(self, timeout_ms=10000):
@@ -25,16 +41,17 @@ class TopicBuilder:
         return self
 
     def build(self):
-        if not hasattr(self, "topic_name") or not hasattr(self, "bootstrap_servers"):
+        if not hasattr(self, "topic_name") or not hasattr(
+            self, "bootstrap_servers"
+        ):
             raise ValueError("Missing required attributes")
 
-        topic = (
-            KafkaClientManager(bootstrap_servers=self.bootstrap_servers)
-            .create_topic(
-                topic_name=self.topic_name,
-                num_partitions=self.num_partitions,
-                replication_factor=self.replication_factor,
-                timeout_ms=self.timeout_ms
-            )
+        topic = KafkaClientManager(
+            bootstrap_servers=self.bootstrap_servers
+        ).create_topic(
+            topic_name=self.topic_name,
+            num_partitions=self.num_partitions,
+            replication_factor=self.replication_factor,
+            timeout_ms=self.timeout_ms,
         )
         return topic

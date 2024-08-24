@@ -1,7 +1,15 @@
-from app.core.generator import MessageGenerator
-from app.providers.kafka.managers.producer_manager import KafkaProducerManager
-from app.responses.response import success_response, failed_response
 from json import loads
+
+from app.core.generator import (
+    MessageGenerator,
+)
+from app.providers.kafka.managers.producer_manager import (
+    KafkaProducerManager,
+)
+from app.responses.response import (
+    failed_response,
+    success_response,
+)
 
 
 async def handle_generate(request):
@@ -26,10 +34,14 @@ async def handle_generate(request):
         "unique": unique,
         "schedule": schedule,
         "time_period": time_period,
-        "session_window": session_window
+        "session_window": session_window,
     }
     try:
-        for msg in msg_generator.generate(schedule=schedule, time_period=time_period, session_window=session_window):
+        for msg in msg_generator.generate(
+            schedule=schedule,
+            time_period=time_period,
+            session_window=session_window,
+        ):
             producer.publish_msg(topic=topic_name, value=msg)
     except Exception as exc:
         log_data.update({"msg": str(exc)})

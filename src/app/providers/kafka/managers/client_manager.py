@@ -1,6 +1,14 @@
-from kafka.admin import KafkaAdminClient, NewTopic
-from kafka.errors import TopicAlreadyExistsError
-from functools import cached_property
+from functools import (
+    cached_property,
+)
+
+from kafka.admin import (
+    KafkaAdminClient,
+    NewTopic,
+)
+from kafka.errors import (
+    TopicAlreadyExistsError,
+)
 
 
 class KafkaClientSingleton:
@@ -14,7 +22,9 @@ class KafkaClientSingleton:
         return cls._client_instance[bootstrap_servers]
 
     def _initialize(self, bootstrap_servers):
-        self.admin_client = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
+        self.admin_client = KafkaAdminClient(
+            bootstrap_servers=bootstrap_servers
+        )
 
     def close(self):
         if self.admin_client:
@@ -27,23 +37,33 @@ class KafkaClientManager:
 
     @cached_property
     def admin_client(self):
-        return KafkaClientSingleton(bootstrap_servers=self.bootstrap_servers).admin_client
+        return KafkaClientSingleton(
+            bootstrap_servers=self.bootstrap_servers
+        ).admin_client
 
-    def create_topic(self, topic_name, num_partitions, replication_factor, timeout_ms):
+    def create_topic(
+        self,
+        topic_name,
+        num_partitions,
+        replication_factor,
+        timeout_ms,
+    ):
         topic = NewTopic(
             name=topic_name,
             num_partitions=num_partitions,
-            replication_factor=replication_factor
+            replication_factor=replication_factor,
         )
 
         try:
             print(self.admin_client)
-            return self.admin_client.create_topics([topic], timeout_ms=timeout_ms)
+            return self.admin_client.create_topics(
+                [topic], timeout_ms=timeout_ms
+            )
         except TopicAlreadyExistsError:
             raise Exception(f"Topic {topic_name} already exists.")
         except Exception as exc:
             raise Exception(f"Failed to create topic {topic_name}: {exc}")
 
     def close(self):
-        if hasattr(self, 'admin_client'):
+        if hasattr(self, "admin_client"):
             self.admin_client.close()

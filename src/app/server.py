@@ -1,6 +1,11 @@
 from aiohttp import web
-from app.routes import setup_routes
-from app.providers import setup_kafka_providers_routes
+
+from app.providers import (
+    setup_kafka_providers_routes,
+)
+from app.routes import (
+    setup_routes,
+)
 
 
 def create_app():

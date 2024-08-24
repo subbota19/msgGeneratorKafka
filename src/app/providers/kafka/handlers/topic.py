@@ -1,5 +1,10 @@
-from app.providers.kafka.builds.topic import TopicBuilder
-from app.responses.response import success_response, failed_response
+from app.providers.kafka.builds.topic import (
+    TopicBuilder,
+)
+from app.responses.response import (
+    failed_response,
+    success_response,
+)
 
 
 async def handle_create_topic(request):
@@ -17,10 +22,10 @@ async def handle_create_topic(request):
         "bootstrap_servers": bootstrap_servers,
         "num_partitions": num_partitions,
         "replication_factor": replication_factor,
-        "timeout_ms": timeout_ms
+        "timeout_ms": timeout_ms,
     }
     try:
-        topic = (
+        (
             TopicBuilder()
             .set_topic_name(topic_name)
             .set_bootstrap_servers(bootstrap_servers)
@@ -30,7 +35,6 @@ async def handle_create_topic(request):
             .build()
         )
     except Exception as exc:
-
         log_data.update({"msg": str(exc)})
         return failed_response(data=log_data)
 
