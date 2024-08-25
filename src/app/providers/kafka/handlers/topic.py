@@ -40,3 +40,29 @@ async def handle_create_topic(request):
 
     log_data.update({"msg": "Topic is created"})
     return success_response(data=log_data)
+
+
+async def handle_topic_info(request):
+    data = await request.post()
+
+    topic_name = data.get("topic_name")
+    bootstrap_servers = data.get("bootstrap_servers")
+
+    log_data = {
+        "topic_name": topic_name,
+        "bootstrap_servers": bootstrap_servers,
+    }
+
+    try:
+        topic_info = (
+            TopicBuilder()
+            .set_topic_name(topic_name)
+            .set_bootstrap_servers(bootstrap_servers)
+            .info()
+        )
+        log_data["info"] = topic_info
+        return success_response(data=log_data)
+
+    except Exception as exc:
+        log_data.update({"msg": str(exc)})
+        return failed_response(data=log_data)

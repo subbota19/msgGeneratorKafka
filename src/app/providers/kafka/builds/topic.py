@@ -55,3 +55,10 @@ class TopicBuilder:
             timeout_ms=self.timeout_ms,
         )
         return topic
+
+    def info(self):
+        return KafkaClientManager(
+            bootstrap_servers=self.bootstrap_servers
+        ).info(
+            topic_name=self.topic_name,
+        )

@@ -55,7 +55,6 @@ class KafkaClientManager:
         )
 
         try:
-            print(self.admin_client)
             return self.admin_client.create_topics(
                 [topic], timeout_ms=timeout_ms
             )
@@ -63,6 +62,14 @@ class KafkaClientManager:
             raise Exception(f"Topic {topic_name} already exists.")
         except Exception as exc:
             raise Exception(f"Failed to create topic {topic_name}: {exc}")
+
+    def info(self, topic_name):
+        try:
+            return self.admin_client.describe_topics([topic_name])
+        except Exception as exc:
+            raise Exception(
+                f"Failed to get info about topic {topic_name}: {exc}"
+            )
 
     def close(self):
         if hasattr(self, "admin_client"):
