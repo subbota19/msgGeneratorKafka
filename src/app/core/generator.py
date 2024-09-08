@@ -1,4 +1,5 @@
 from base64 import b64encode
+from datetime import datetime
 from functools import lru_cache
 from os import urandom
 from typing import (
@@ -8,8 +9,17 @@ from typing import (
 )
 
 
-URANDOM_INT = 16
+URANDOM_INT = 4
 ENCODING = "utf-8"
+
+DICT_TYPER = {
+    "STRING": lambda: b64encode(urandom(URANDOM_INT)).decode(
+        encoding=ENCODING
+    ),
+    "INTEGER": lambda: int.from_bytes(urandom(URANDOM_INT)),
+    "FLOAT": lambda: float(int.from_bytes(urandom(URANDOM_INT))),
+    "DATETIME": lambda: datetime.now().isoformat(),
+}
 
 
 class MessageGenerator:
@@ -28,14 +38,11 @@ class MessageGenerator:
     ) -> Dict[str, Any]:
         message = {}
         for field, data_type in self.schema.items():
-            if data_type == "STRING":
-                message[field] = b64encode(urandom(URANDOM_INT)).decode(
-                    encoding=ENCODING
-                )
-            elif data_type == "INTEGER":
-                message[field] = int.from_bytes(urandom(URANDOM_INT))
-            elif data_type == "FLOAT":
-                message[field] = float(int.from_bytes(urandom(URANDOM_INT)))
+            func_typer = DICT_TYPER.get(data_type)
+
+            if func_typer:
+                message[field] = func_typer()
+
         return message
 
     @lru_cache
