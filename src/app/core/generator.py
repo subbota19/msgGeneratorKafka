@@ -60,6 +60,15 @@ class MessageGenerator:
             else:
                 yield self._generate_identical_message()
 
+    def generate_schedule(
+        self, time_period, session_window
+    ) -> Iterator[Dict[str, Any]]:
+        for _ in range(self.count):
+            if self.unique:
+                yield self._generate_unique_message()
+            else:
+                yield self._generate_identical_message()
+
     def generate(
         self,
         schedule: str,
@@ -68,8 +77,8 @@ class MessageGenerator:
     ) -> Iterator[Dict[str, Any]]:
         if schedule == "once":
             return self.generate_once()
-        # elif schedule == "schedule":
-        #     return self.generate_schedule(time_period, session_window)
+        elif schedule == "schedule":
+            return self.generate_schedule(time_period, session_window)
         else:
             raise Exception(
                 "Invalid interval value. Use 'once' or 'schedule'."

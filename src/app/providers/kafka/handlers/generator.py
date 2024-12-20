@@ -1,5 +1,6 @@
 from json import loads
 
+from app.core.asyncio_generator import AsyncioGenerator
 from app.core.generator import (
     MessageGenerator,
 )
@@ -19,10 +20,11 @@ async def handle_generate(request):
     bootstrap_servers = data.get("bootstrap_servers")
     schema = loads(data.get("schema", {}))
     schedule = data.get("schedule")
-    count = data.get("count", 10)
+    count = int(data.get("count", 10))
     unique = data.get("unique", False)
-    time_period = data.get("time_period", 0)
-    session_window = data.get("session_window", 0)
+    parallelism = int(data.get("parallelism", 1))
+    time_period = int(data.get("time_period", 1))
+    session_window = int(data.get("session_window", 1))
 
     msg_generator = MessageGenerator(schema=schema, count=count, unique=unique)
     producer = KafkaProducerManager(bootstrap_servers=bootstrap_servers)
@@ -37,12 +39,21 @@ async def handle_generate(request):
         "session_window": session_window,
     }
     try:
-        for msg in msg_generator.generate(
-            schedule=schedule,
+        generator = AsyncioGenerator(
+            producer=producer,
+            message_generator=msg_generator,
+            parallelism=parallelism,
             time_period=time_period,
             session_window=session_window,
-        ):
-            producer.publish_msg(topic=topic_name, value=msg)
+            topic_name=topic_name,
+        )
+        await generator.generate()
+        # for msg in msg_generator.generate(
+        #         schedule=schedule,
+        #         time_period=time_period,
+        #         session_window=session_window,
+        # ):
+        #     producer.publish_msg(topic=topic_name, value=msg)
     except Exception as exc:
         log_data.update({"msg": str(exc)})
         return failed_response(data=log_data)

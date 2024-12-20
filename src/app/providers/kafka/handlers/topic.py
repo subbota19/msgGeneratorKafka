@@ -13,9 +13,9 @@ async def handle_create_topic(request):
     topic_name = data.get("topic_name")
     bootstrap_servers = data.get("bootstrap_servers")
 
-    num_partitions = data.get("num_partitions", 1)
-    replication_factor = data.get("replication_factor", 1)
-    timeout_ms = data.get("timeout_ms", 10000)
+    num_partitions = int(data.get("num_partitions", 1))
+    replication_factor = int(data.get("replication_factor", 1))
+    timeout_ms = int(data.get("timeout_ms", 10000))
 
     log_data = {
         "topic_name": topic_name,
