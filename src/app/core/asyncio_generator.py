@@ -1,16 +1,16 @@
 from asyncio import TimeoutError, create_task, gather, sleep, wait_for
 from time import time
 
+from app.abstracts.producer_manger import AbstractProducerManager
 from app.core.generator import (
     MessageGenerator,
 )
-from app.providers.kafka.managers.producer_manager import KafkaProducerManager
 
 
 class AsyncioGenerator:
     def __init__(
         self,
-        producer: KafkaProducerManager,
+        producer: AbstractProducerManager,
         message_generator: MessageGenerator,
         parallelism: int = 1,
         time_period=None,
@@ -26,7 +26,7 @@ class AsyncioGenerator:
 
     async def push_event(self):
         # TODO: implement async publish by using aiokafka
-        for msg in self.message_generator.generate_once():
+        for msg in self.message_generator.generate():
             self.producer.publish_msg(
                 topic=self.topic_name,
                 value=msg,
