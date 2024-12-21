@@ -5,6 +5,8 @@ from json import dumps
 
 from kafka import KafkaProducer
 
+from app.abstracts.producer_manger import AbstractProducerManager
+
 
 DEFAULT_ENCODING = "utf-8"
 
@@ -41,7 +43,7 @@ class KafkaProducerSingleton:
         )
 
 
-class KafkaProducerManager:
+class KafkaProducerManager(AbstractProducerManager):
     def __init__(
         self,
         bootstrap_servers,

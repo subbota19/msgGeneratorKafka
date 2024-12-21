@@ -4,8 +4,8 @@ from app.core.asyncio_generator import AsyncioGenerator
 from app.core.generator import (
     MessageGenerator,
 )
-from app.providers.kafka.managers.producer_manager import (
-    KafkaProducerManager,
+from app.providers.kafka.managers.aio_producer_manager import (
+    AIOKafkaProducerManager,
 )
 from app.responses.response import (
     failed_response,
@@ -27,7 +27,7 @@ async def handle_generate(request):
     session_window = int(data.get("session_window", 1))
 
     msg_generator = MessageGenerator(schema=schema, count=count, unique=unique)
-    producer = KafkaProducerManager(bootstrap_servers=bootstrap_servers)
+    producer = AIOKafkaProducerManager(bootstrap_servers=bootstrap_servers)
 
     log_data = {
         "topic_name": topic_name,
@@ -39,6 +39,9 @@ async def handle_generate(request):
         "session_window": session_window,
     }
     try:
+        from time import time
+
+        s = time()
         generator = AsyncioGenerator(
             producer=producer,
             message_generator=msg_generator,
@@ -48,12 +51,9 @@ async def handle_generate(request):
             topic_name=topic_name,
         )
         await generator.generate()
-        # for msg in msg_generator.generate(
-        #         schedule=schedule,
-        #         time_period=time_period,
-        #         session_window=session_window,
-        # ):
-        #     producer.publish_msg(topic=topic_name, value=msg)
+
+        print(f"Time: {time() - s}")
+
     except Exception as exc:
         log_data.update({"msg": str(exc)})
         return failed_response(data=log_data)

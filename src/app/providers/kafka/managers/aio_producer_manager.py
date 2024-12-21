@@ -39,6 +39,7 @@ class AIOKafkaProducerManager(AbstractProducerManager):
     def __init__(self, bootstrap_servers, encoding=DEFAULT_ENCODING):
         self.bootstrap_servers = bootstrap_servers
         self.encoding = encoding
+        self._initialized = False
 
     @cached_property
     def admin_producer(self):
@@ -51,7 +52,9 @@ class AIOKafkaProducerManager(AbstractProducerManager):
         ).producer
 
     async def initialize(self):
-        await self.admin_producer.start()
+        if not self._initialized:
+            await self.admin_producer.start()
+            self._initialized = True
 
     async def publish_msg(
         self,
@@ -62,6 +65,7 @@ class AIOKafkaProducerManager(AbstractProducerManager):
         partition=None,
         timestamp_ms=None,
     ):
+        await self.initialize()
         await self.admin_producer.send(
             topic,
             value=value,
@@ -77,3 +81,18 @@ class AIOKafkaProducerManager(AbstractProducerManager):
     async def close(self):
         if self.admin_producer is not None:
             await self.admin_producer.stop()
+
+
+# async def main():
+#     k = AIOKafkaProducerManager(
+#         bootstrap_servers="192.168.49.2:30000"
+#     )
+#
+#     await k.publish_msg("benchmark_fault", {"test": "abc"})
+#
+#     # await k.close()
+#
+#
+# from asyncio import run
+#
+# run(main())

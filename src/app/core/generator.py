@@ -1,11 +1,12 @@
+from asyncio import sleep
 from base64 import b64encode
 from datetime import datetime
 from functools import lru_cache
 from os import urandom
 from typing import (
     Any,
+    AsyncIterator,
     Dict,
-    Iterator,
 )
 
 
@@ -51,11 +52,37 @@ class MessageGenerator:
     ) -> Dict[str, Any]:
         return self._generate_unique_message()
 
-    def generate(
+    async def generate(
         self,
-    ) -> Iterator[Dict[str, Any]]:
+        meta: Dict[str, Any] = None,
+    ) -> AsyncIterator[Dict[str, Any]]:
         for _ in range(self.count):
             if self.unique:
-                yield self._generate_unique_message()
+                msg = self._generate_unique_message()
+                if meta is not None:
+                    msg.update(meta)
+                await sleep(0)
+                yield msg
+
             else:
-                yield self._generate_identical_message()
+                msg = self._generate_identical_message()
+                if meta is not None:
+                    msg.update(meta)
+                await sleep(0)
+                yield msg
+
+    def generate_(
+        self,
+        meta: Dict[str, Any] = None,
+    ) -> Dict[str, Any]:
+        for _ in range(self.count):
+            if self.unique:
+                msg = self._generate_unique_message()
+                if meta is not None:
+                    msg.update(meta)
+                return msg
+            else:
+                msg = self._generate_identical_message()
+                if meta is not None:
+                    msg.update(meta)
+                return msg
