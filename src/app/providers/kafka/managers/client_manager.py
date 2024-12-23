@@ -74,3 +74,11 @@ class KafkaClientManager:
     def close(self):
         if hasattr(self, "admin_client"):
             self.admin_client.close()
+
+    def delete(self, topic_name):
+        try:
+            return self.admin_client.delete_topics([topic_name])
+        except Exception as exc:
+            raise Exception(
+                f"Failed to delete about topic {topic_name}: {exc}"
+            )

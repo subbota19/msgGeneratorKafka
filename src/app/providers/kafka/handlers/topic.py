@@ -66,3 +66,27 @@ async def handle_topic_info(request):
     except Exception as exc:
         log_data.update({"msg": str(exc)})
         return failed_response(data=log_data)
+
+
+async def handle_delete_topic(request):
+    topic_name = request.query.get("topic_name")
+    bootstrap_servers = request.query.get("bootstrap_servers")
+
+    log_data = {
+        "topic_name": topic_name,
+        "bootstrap_servers": bootstrap_servers,
+    }
+
+    try:
+        (
+            TopicBuilder()
+            .set_topic_name(topic_name)
+            .set_bootstrap_servers(bootstrap_servers)
+            .delete()
+        )
+    except Exception as exc:
+        log_data.update({"msg": str(exc)})
+        return failed_response(data=log_data)
+
+    log_data.update({"msg": "Topic is deleted"})
+    return success_response(data=log_data)

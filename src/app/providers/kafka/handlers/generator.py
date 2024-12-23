@@ -19,7 +19,6 @@ async def handle_generate(request):
     topic_name = data.get("topic_name")
     bootstrap_servers = data.get("bootstrap_servers")
     schema = loads(data.get("schema", {}))
-    schedule = data.get("schedule")
     count = int(data.get("count", 10))
     unique = data.get("unique", False)
     parallelism = int(data.get("parallelism", 1))
@@ -34,7 +33,6 @@ async def handle_generate(request):
         "bootstrap_servers": bootstrap_servers,
         "count": count,
         "unique": unique,
-        "schedule": schedule,
         "time_period": time_period,
         "session_window": session_window,
     }

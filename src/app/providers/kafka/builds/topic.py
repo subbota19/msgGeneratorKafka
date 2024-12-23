@@ -62,3 +62,8 @@ class TopicBuilder:
         ).info(
             topic_name=self.topic_name,
         )
+
+    def delete(self) -> None:
+        KafkaClientManager(bootstrap_servers=self.bootstrap_servers).delete(
+            topic_name=self.topic_name
+        )
