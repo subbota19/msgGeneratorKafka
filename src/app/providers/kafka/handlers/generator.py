@@ -11,6 +11,7 @@ from app.responses.response import (
     failed_response,
     success_response,
 )
+from app.utils.transform import bool_transformator
 
 
 async def handle_generate(request):
@@ -20,14 +21,30 @@ async def handle_generate(request):
     bootstrap_servers = data.get("bootstrap_servers")
     schema = loads(data.get("schema", {}))
     count = int(data.get("count", 10))
-    unique = data.get("unique", False)
+    unique = (
+        False
+        if data.get("unique") is None
+        else bool_transformator(data.get("unique"))
+    )
     parallelism = int(data.get("parallelism", 1))
     time_period = int(data.get("time_period", 1))
     session_window = int(data.get("session_window", 1))
+    acks = (lambda x: int(x) if x in ("0", "1") else x)(data.get("acks", "1"))
+    enable_idempotence = (
+        False
+        if data.get("enable_idempotence") is None
+        else bool_transformator(data.get("enable_idempotence"))
+    )
 
     msg_generator = MessageGenerator(schema=schema, count=count, unique=unique)
-    producer = AIOKafkaProducerManager(bootstrap_servers=bootstrap_servers)
+    producer = AIOKafkaProducerManager(
+        bootstrap_servers=bootstrap_servers,
+        acks=acks,
+        enable_idempotence=enable_idempotence,
+    )
 
+    print(producer.enable_idempotence)
+    print(producer.acks)
     log_data = {
         "topic_name": topic_name,
         "bootstrap_servers": bootstrap_servers,
@@ -35,6 +52,8 @@ async def handle_generate(request):
         "unique": unique,
         "time_period": time_period,
         "session_window": session_window,
+        "acks": acks,
+        "enable_idempotence": enable_idempotence,
     }
     try:
         from time import time

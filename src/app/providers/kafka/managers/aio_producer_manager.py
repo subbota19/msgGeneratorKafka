@@ -9,12 +9,21 @@ from app.abstracts.producer_manger import AbstractProducerManager
 
 
 DEFAULT_ENCODING = "utf-8"
+DEFAULT_ACKS = 1
+DEFAULT_ENABLE_ENFORCEMENT = False
 
 
 class AIOKafkaProducerSingleton:
     _producer_instance = {}
 
-    def __new__(cls, bootstrap_servers, value_serializer, key_serializer):
+    def __new__(
+        cls,
+        bootstrap_servers,
+        value_serializer,
+        key_serializer,
+        acks,
+        enable_idempotence,
+    ):
         if bootstrap_servers not in cls._producer_instance:
             producer_instance = super(AIOKafkaProducerSingleton, cls).__new__(
                 cls
@@ -23,22 +32,41 @@ class AIOKafkaProducerSingleton:
                 bootstrap_servers=bootstrap_servers,
                 value_serializer=value_serializer,
                 key_serializer=key_serializer,
+                acks=acks,
+                enable_idempotence=enable_idempotence,
             )
             cls._producer_instance[bootstrap_servers] = producer_instance
         return cls._producer_instance[bootstrap_servers]
 
-    def _initialize(self, bootstrap_servers, value_serializer, key_serializer):
+    def _initialize(
+        self,
+        bootstrap_servers,
+        value_serializer,
+        key_serializer,
+        acks,
+        enable_idempotence,
+    ):
         self.producer = AIOKafkaProducer(
             bootstrap_servers=bootstrap_servers,
             value_serializer=value_serializer,
             key_serializer=key_serializer,
+            acks=acks,
+            enable_idempotence=enable_idempotence,
         )
 
 
 class AIOKafkaProducerManager(AbstractProducerManager):
-    def __init__(self, bootstrap_servers, encoding=DEFAULT_ENCODING):
+    def __init__(
+        self,
+        bootstrap_servers,
+        encoding=DEFAULT_ENCODING,
+        acks=DEFAULT_ACKS,
+        enable_idempotence=DEFAULT_ENABLE_ENFORCEMENT,
+    ):
         self.bootstrap_servers = bootstrap_servers
         self.encoding = encoding
+        self.acks = acks
+        self.enable_idempotence = enable_idempotence
         self._initialized = False
 
     @cached_property
@@ -49,6 +77,8 @@ class AIOKafkaProducerManager(AbstractProducerManager):
             key_serializer=lambda v: v.encode(self.encoding)
             if v is not None
             else None,
+            acks=self.acks,
+            enable_idempotence=self.enable_idempotence,
         ).producer
 
     async def initialize(self):
@@ -66,6 +96,7 @@ class AIOKafkaProducerManager(AbstractProducerManager):
         timestamp_ms=None,
     ):
         await self.initialize()
+
         await self.admin_producer.send(
             topic,
             value=value,
@@ -81,18 +112,3 @@ class AIOKafkaProducerManager(AbstractProducerManager):
     async def close(self):
         if self.admin_producer is not None:
             await self.admin_producer.stop()
-
-
-# async def main():
-#     k = AIOKafkaProducerManager(
-#         bootstrap_servers="192.168.49.2:30000"
-#     )
-#
-#     await k.publish_msg("benchmark_fault", {"test": "abc"})
-#
-#     # await k.close()
-#
-#
-# from asyncio import run
-#
-# run(main())
