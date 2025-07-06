@@ -35,6 +35,7 @@ async def handle_generate(request):
         if data.get("enable_idempotence") is None
         else bool_transformator(data.get("enable_idempotence"))
     )
+    topic_key = data.get("topic_key", None)
 
     msg_generator = MessageGenerator(schema=schema, count=count, unique=unique)
     producer = AIOKafkaProducerManager(
@@ -43,8 +44,6 @@ async def handle_generate(request):
         enable_idempotence=enable_idempotence,
     )
 
-    print(producer.enable_idempotence)
-    print(producer.acks)
     log_data = {
         "topic_name": topic_name,
         "bootstrap_servers": bootstrap_servers,
@@ -54,6 +53,7 @@ async def handle_generate(request):
         "session_window": session_window,
         "acks": acks,
         "enable_idempotence": enable_idempotence,
+        "topic_key": topic_key,
     }
     try:
         from time import time
@@ -66,12 +66,14 @@ async def handle_generate(request):
             time_period=time_period,
             session_window=session_window,
             topic_name=topic_name,
+            topic_key=topic_key,
         )
         await generator.generate()
 
         print(f"Time: {time() - s}")
 
     except Exception as exc:
+        print(exc)
         log_data.update({"msg": str(exc)})
         return failed_response(data=log_data)
 

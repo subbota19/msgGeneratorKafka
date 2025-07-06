@@ -20,6 +20,7 @@ class AsyncioGenerator:
         time_period=None,
         session_window=None,
         topic_name: str = None,
+        topic_key: str = None,
     ):
         self.producer = producer
         self.message_generator = message_generator
@@ -27,6 +28,7 @@ class AsyncioGenerator:
         self.time_period = time_period
         self.session_window = session_window
         self.topic_name = topic_name
+        self.topic_key = topic_key
 
     async def push_event(self, meta: Dict[str, Any] = None):
         async for msg in self.message_generator.generate(meta=meta):
@@ -35,6 +37,7 @@ class AsyncioGenerator:
             await self.producer.publish_msg(
                 topic=self.topic_name,
                 value=msg,
+                key=str(msg.get(self.topic_key)) if self.topic_key else None,
             )
 
     async def process(self, client_id):
